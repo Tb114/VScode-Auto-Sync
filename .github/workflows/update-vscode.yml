@@ -2,35 +2,32 @@ name: Update VS Code Windows 64-bit Installer
 
 on:
   schedule:
-    - cron: '17 22 * * *'  # 每天零点执行
+    - cron: '0 0 * * *'  # 每天 UTC 00:00 运行一次
 
 jobs:
   update:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Get latest VS Code version
-        id: get-version
+      - name: Check for new VS Code release
+        id: check_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          VERSION=$(curl -s https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user | grep -oP '(?<=code-stable-)(.*?)(?=.exe)')
-          echo "::set-output name=version::$VERSION"
+          latest_version=$(curl -s https://update.code.visualstudio.com/api/update/win64/stable/version)
+          echo "Latest version of VS Code: $latest_version"
+          echo "::set-output name=version::$latest_version"
 
       - name: Download VS Code installer
+        id: download_installer
+        env:
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         run: |
-          VERSION="${{ steps.get-version.outputs.version }}"
-          curl -L -o "VSCodeSetup-${VERSION}-x64.exe" "https://update.code.visualstudio.com/${VERSION}/win32-x64-user/VSCodeSetup-${VERSION}-x64.exe"
+          version=${{ steps.check_release.outputs.version }}
+          curl -o vscode-win64-${version}.exe -L https://update.code.visualstudio.com/api/update/win64/stable/${version}/installer
+          echo "Downloaded VS Code installer version $version"
 
-      - name: Commit and push new installer
-        uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Upload installer to repository
+        uses: actions/upload-artifact@v2
         with:
-          commit_message: "Update VS Code installer to version ${VERSION}"
-          files: |
-            VSCodeSetup-${VERSION}-x64.exe
-
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.Tb_1234 }}
+          name: vscode-installer
+          path: vscode-win64-${{ steps.check_release.outputs.version }}.exe
