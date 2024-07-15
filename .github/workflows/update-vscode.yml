@@ -2,7 +2,6 @@
 name: Update VS Code Windows 64-bit Installer
 on:   
   workflow_dispatch:
-on:
   schedule:
     - cron: '0 0 * * *'  # 每天 UTC 00:00 运行一次
 
