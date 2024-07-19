@@ -1,6 +1,5 @@
-
 name: Update VS Code Windows 64-bit Installer
-on:   
+on:
   workflow_dispatch:
   schedule:
     - cron: '0 0 * * *' # 每天UTC时间0点执行（北京时间为8点）
@@ -12,7 +11,7 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v3
-      
+
     - name: Get Latest VSCode Version
       id: get_latest_version
       run: |
@@ -21,19 +20,19 @@ jobs:
         echo "::set-output name=version::$latestVersion"
 
     - name: Download VSCode Installer
-      if: ${{ !empty(steps.get_latest_version.outputs.version) }}
+      if: ${{ steps.get_latest_version.outputs.version != '' }}
       run: |
         $version = '${{ steps.get_latest_version.outputs.version }}'
         $url = "https://update.code.visualstudio.com/$version/win32-x64/stable"
-        Invoke-WebRequest -Uri $url -OutFile ".\VSCode-$version-win32-x64-setup.exe"
+        Invoke-WebRequest -Uri $url -OutFile "VSCode-$version-win32-x64-setup.exe"
 
     - name: Commit and Push
-      if: ${{ !empty(steps.get_latest_version.outputs.version) }}
+      if: ${{ steps.get_latest_version.outputs.version != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git add .\VSCode-${{ steps.get_latest_version.outputs.version }}-win32-x64-setup.exe
+        git add "VSCode-${{ steps.get_latest_version.outputs.version }}-win32-x64-setup.exe"
         git commit -m "Update to latest VSCode version ${{ steps.get_latest_version.outputs.version }}"
         git push origin HEAD
