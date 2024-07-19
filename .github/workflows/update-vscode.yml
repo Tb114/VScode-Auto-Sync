@@ -3,32 +3,37 @@ name: Update VS Code Windows 64-bit Installer
 on:   
   workflow_dispatch:
   schedule:
-    - cron: '0 0 * * *'  # 每天 UTC 00:00 运行一次
+    - cron: '0 0 * * *' # 每天UTC时间0点执行（北京时间为8点）
 
 jobs:
-  update:
-    runs-on: ubuntu-latest
+  update-vscode:
+    runs-on: windows-latest
+
     steps:
-      - name: Check for new VS Code release
-        id: check_release
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        run: |
-          latest_version=$(curl -s https://update.code.visualstudio.com/api/update/win64/stable/version)
-          echo "Latest version of VS Code: $latest_version"
-          echo "::set-output name=version::$latest_version"
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+      
+    - name: Get Latest VSCode Version
+      id: get_latest_version
+      run: |
+        $latestVersion = (Invoke-WebRequest -Uri "https://code.visualstudio.com/sha").Content.Split('"')[3]
+        echo "Latest version is: $latestVersion"
+        echo "::set-output name=version::$latestVersion"
 
-      - name: Download VS Code installer
-        id: download_installer
-        env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
-        run: |
-          version=${{ steps.check_release.outputs.version }}
-          curl -o vscode-win64-${version}.exe -L https://update.code.visualstudio.com/api/update/win64/stable/${version}/installer
-          echo "Downloaded VS Code installer version $version"
+    - name: Download VSCode Installer
+      if: ${{ !empty(steps.get_latest_version.outputs.version) }}
+      run: |
+        $version = '${{ steps.get_latest_version.outputs.version }}'
+        $url = "https://update.code.visualstudio.com/$version/win32-x64/stable"
+        Invoke-WebRequest -Uri $url -OutFile ".\VSCode-$version-win32-x64-setup.exe"
 
-      - name: Upload installer to repository
-        uses: actions/upload-artifact@v2
-        with:
-          name: vscode-installer
-          path: vscode-win64-${{ steps.check_release.outputs.version }}.exe
+    - name: Commit and Push
+      if: ${{ !empty(steps.get_latest_version.outputs.version) }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git add .\VSCode-${{ steps.get_latest_version.outputs.version }}-win32-x64-setup.exe
+        git commit -m "Update to latest VSCode version ${{ steps.get_latest_version.outputs.version }}"
+        git push origin HEAD
