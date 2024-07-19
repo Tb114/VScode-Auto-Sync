@@ -12,27 +12,17 @@ jobs:
     - name: Checkout Repository
       uses: actions/checkout@v3
 
-    - name: Get Latest VSCode Version
-      id: get_latest_version
-      run: |
-        $latestVersion = (Invoke-WebRequest -Uri "https://code.visualstudio.com/sha").Content.Split('"')[3]
-        echo "Latest version is: $latestVersion"
-        echo "::set-output name=version::$latestVersion"
-
     - name: Download VSCode Installer
-      if: ${{ steps.get_latest_version.outputs.version != '' }}
       run: |
-        $version = '${{ steps.get_latest_version.outputs.version }}'
-        $url = "https://update.code.visualstudio.com/$version/win32-x64/stable"
-        Invoke-WebRequest -Uri $url -OutFile "VSCode-$version-win32-x64-setup.exe"
+        $url = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
+        Invoke-WebRequest -Uri $url -OutFile "VSCode-latest-win32-x64-setup.exe"
 
     - name: Commit and Push
-      if: ${{ steps.get_latest_version.outputs.version != '' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git add "VSCode-${{ steps.get_latest_version.outputs.version }}-win32-x64-setup.exe"
-        git commit -m "Update to latest VSCode version ${{ steps.get_latest_version.outputs.version }}"
+        git add "VSCode-latest-win32-x64-setup.exe"
+        git commit -m "Update to latest VSCode version"
         git push origin HEAD
