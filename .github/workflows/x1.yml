@@ -22,9 +22,9 @@ jobs:
             Invoke-WebRequest -Uri $locationHeader -OutFile "VSCodeSetup.exe"
             # 从响应中提取 'Location' 头
         - name: Push
-          uses: ad-m/github-push-action@master
-          with:
-            branch: main
-            directory: .
-            # 使用 PAT 代替默认的 GITHUB_TOKEN
-            github_token: ${{ secrets.PAT_TOKEN }}
+          env :
+            PAT:  ${{ secrets.PAT_TOKEN }}
+          run: |
+            & git add .
+            & git commit -m "Automatically updated VSCodeSetup.exe"
+            & git push origin main
