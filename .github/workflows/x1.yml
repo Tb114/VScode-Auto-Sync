@@ -1,0 +1,20 @@
+
+name: test1
+on:
+    workflow_dispatch:
+jobs:
+    x:
+        runs-on: windows-latest
+        steps:
+        - name: aaaa
+          run: |
+
+            $webRequest = [System.Net.WebRequest]::Create("https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user")
+            $webRequest.Method = 'HEAD'
+            $webRequest.AllowAutoRedirect = $false
+            $response = $webRequest.GetResponse()
+            $response.Headers | ConvertTo-Json
+            $response.Close()
+
+            # 从响应中提取 'Location' 头
+            $locationHeader = $response.Headers["Location"]
