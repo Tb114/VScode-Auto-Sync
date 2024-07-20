@@ -25,6 +25,8 @@ jobs:
           env :
             PAT:  ${{ secrets.PAT_TOKEN }}
           run: |
+            &git config --global user.email "tb1145@outlook.com"
+            &git config --global user.name "Tb"
             & git add .
             & git commit -m "Automatically updated VSCodeSetup.exe"
             & git push origin main
