@@ -1,6 +1,6 @@
 permissions:
   contents: write
-name: VSCode Sync
+name: Get Verison
 on:
     schedule:
       - cron: '0 0 * * *'
@@ -13,19 +13,13 @@ jobs:
         steps:
         - name: Check
           uses: actions/checkout@v3
-        - name: Download
+        - name: Get
           shell: pwsh
           run: |
-
-            $webRequest = [System.Net.WebRequest]::Create("https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user")
-            $webRequest.Method = 'HEAD'
-            $webRequest.AllowAutoRedirect = $false
-            $response = $webRequest.GetResponse()
-            $headersJson = $response.Headers | ConvertTo-Json
-            $locationHeader = $response.Headers["Location"]
-            $response.Close()
-            Invoke-WebRequest -Uri $locationHeader -OutFile "VSCodeSetup.exe"
-            # 从响应中提取 'Location' 头
+            $s=curl "https://code.visualstudio.com/sha"
+            $match=$s -match '"productVersion":"([^"]+)"'
+            $productVersion = $Matches[1]
+            echo $productVersion > README.md
         - name: Push
           run: |
             &git config --local user.email "tb1145@outlook.com"
