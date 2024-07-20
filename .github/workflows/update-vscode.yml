@@ -26,4 +26,4 @@ jobs:
         git config --global user.name "GitHub Action"
         git add "VSCode-latest-win32-x64-setup.exe"
         git commit -m "Update to latest VSCode version"
-        git push https://${{ secrets.PAT }}@github.com/Tb114/VScode-Auto-Sync.git HEAD
+        git push https://${{ secrets.PAT_TOKEN }}@github.com/Tb114/VScode-Auto-Sync.git HEAD
