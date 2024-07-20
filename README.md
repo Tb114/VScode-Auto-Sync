@@ -1,1 +1,1 @@
-1.91.1
+VScode Current Version: 1.91.1
