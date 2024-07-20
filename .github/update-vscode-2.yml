@@ -1,0 +1,42 @@
+name: Download VS Code and Commit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *' # 每天午夜执行一次
+
+jobs:
+  download_and_push:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT_TOKEN }}
+
+    - name: Get redirected URL
+      id: get_redirected_url
+      run: |
+        # 使用curl获取头部信息，提取Location头中的URL
+        REDIRECTED_URL=$(curl -s -I "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user" | grep "^Location:" | awk '{print $2}')
+        echo "Redirected URL is: $REDIRECTED_URL"
+        echo "::set-output name=redirected_url::$REDIRECTED_URL"
+
+    - name: Download file from redirected URL
+      run: |
+        # 下载重定向后的URL的文件
+        curl -L -o vscode-setup.exe ${{ steps.get_redirected_url.outputs.redirected_url }}
+        echo "File downloaded."
+
+    - name: Add and commit changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        git commit -m "Automatically update VS Code setup file" || echo "No changes to commit"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.PAT_TOKEN }}
