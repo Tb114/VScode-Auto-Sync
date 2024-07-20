@@ -19,7 +19,7 @@ jobs:
             $s=curl "https://code.visualstudio.com/sha"
             $match=$s -match '"productVersion":"([^"]+)"'
             $productVersion = $Matches[1]
-            echo $productVersion > README.md
+            echo "VScode Current Version: $productVersion" > README.md
         - name: Push
           run: |
             &git config --local user.email "tb1145@outlook.com"
