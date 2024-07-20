@@ -13,9 +13,9 @@ jobs:
             $webRequest.Method = 'HEAD'
             $webRequest.AllowAutoRedirect = $false
             $response = $webRequest.GetResponse()
-            $response.Headers | ConvertTo-Json
+            $headersJson = $response.Headers | ConvertTo-Json
+            $locationHeader = $response.Headers["Location"]
             $response.Close()
 
             # 从响应中提取 'Location' 头
-            $locationHeader = $response.Headers["Location"]
           shell: pwsh
