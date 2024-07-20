@@ -17,12 +17,12 @@ jobs:
         $url = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
         Invoke-WebRequest -Uri $url -OutFile "VSCode-latest-win32-x64-setup.exe"
 
-    - name: Commit and Push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        git config --global user.email "action@github.com"
-        git config --global user.name "GitHub Action"
-        git add "VSCode-latest-win32-x64-setup.exe"
-        git commit -m "Update to latest VSCode version"
-        git push origin HEAD
+        - name: Commit and Push
+        env:
+          PAT: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add "VSCode-latest-win32-x64-setup.exe"
+          git commit -m "Update to latest VSCode version"
+          git push https://${{ secrets.PAT }}@github.com/Tb114/VScode-Auto-Sync.git HEAD
