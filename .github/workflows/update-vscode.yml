@@ -7,7 +7,7 @@ on:
 
 jobs:
   update-vscode:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - name: Checkout Repository
@@ -15,15 +15,26 @@ jobs:
 
     - name: Download VSCode Installer
       run: |
-        $url = "https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user"
-        Invoke-WebRequest -Uri $url -OutFile "VSCode-latest-win32-x64-setup.exe"
+        curl -LJO https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user
 
-    - name: Commit and Push
+    - name: Install gh CLI
+      run: |
+        curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+        sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+        sudo apt update -y
+        sudo apt install gh -y
+
+    - name: Login to GitHub CLI
       env:
         PAT: ${{ secrets.PAT_TOKEN }}
+      run: |
+        gh auth login --with-token <(echo $PAT)
+
+    - name: Commit and Push
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
         git add "VSCode-latest-win32-x64-setup.exe"
         git commit -m "Update to latest VSCode version"
-        git push https://${{ secrets.PAT_TOKEN }}@github.com/Tb114/VScode-Auto-Sync.git HEAD
+        gh repo edit --push
