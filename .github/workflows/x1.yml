@@ -16,6 +16,6 @@ jobs:
             $headersJson = $response.Headers | ConvertTo-Json
             $locationHeader = $response.Headers["Location"]
             $response.Close()
-
+            Invoke-WebRequest -Uri $locationHeader -OutFile "VSCodeSetup.exe"
             # 从响应中提取 'Location' 头
           shell: pwsh
