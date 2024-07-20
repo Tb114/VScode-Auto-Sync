@@ -27,3 +27,6 @@ jobs:
             &git add .
             &git commit -m "Automatically updated by GitHub Action"
             &git push origin main
+        - name: Clear
+          run: |
+            rm README.md
