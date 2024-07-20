@@ -4,6 +4,8 @@ on:
     workflow_dispatch:
 jobs:
     x:
+        env :
+          PAT:  ${{ secrets.PAT_TOKEN }}
         runs-on: windows-latest
         steps:
         - name: Check
@@ -21,12 +23,10 @@ jobs:
             $response.Close()
             Invoke-WebRequest -Uri $locationHeader -OutFile "VSCodeSetup.exe"
             # 从响应中提取 'Location' 头
-        - name: Push
-          env :
-            PAT:  ${{ secrets.PAT_TOKEN }}
+        - name: push
           run: |
-            &git config --global user.email "tb1145@outlook.com"
-            &git config --global user.name "Tb"
-            & git add .
-            & git commit -m "Automatically updated VSCodeSetup.exe"
-            & git push origin main
+            &git config --local user.email "action@github.com"
+            &git config --local user.name "GitHub Action"
+            &git add .
+            &git commit -m "Automatically updated by GitHub Action"
+            &git push origin main
