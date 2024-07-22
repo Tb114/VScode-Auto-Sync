@@ -20,7 +20,7 @@ jobs:
             $match=$s -match '"productVersion":"([^"]+)"'
             $productVersion = $Matches[1]
             $introduction = "对VSCode x64 on Windows(user)进行放入仓库"
-            echo $introduction "VScode Current Version: $productVersion" > README.md
+            echo "$introduction \n VScode当前版本: $productVersion \n VScode Current Version: $productVersion" > README.md
         - name: Push
           run: |
             &git config --local user.email "tb1145@outlook.com"
