@@ -1,12 +1,12 @@
 permissions:
   contents: write
-name: VSCode Sync
+name: Update VScode
 on:
     schedule:
       - cron: '0 0 * * *'
     workflow_dispatch:
 jobs:
-    X:
+    Update_VScode:
         env :
           PAT:  ${{ secrets.GITHUB_TOKEN }}
         runs-on: windows-latest
@@ -24,8 +24,7 @@ jobs:
             $headersJson = $response.Headers | ConvertTo-Json
             $locationHeader = $response.Headers["Location"]
             $response.Close()
-            Invoke-WebRequest -Uri $locationHeader -OutFile "VSCodeSetup.exe"
-            # 从响应中提取 'Location' 头
+            Invoke-WebRequest -Uri $locationHeader -OutFile "VScodeSetup.exe"
         - name: Push
           run: |
             &git config --local user.email "tb1145@outlook.com"
@@ -35,4 +34,4 @@ jobs:
             &git push origin main
         - name: Clear
           run: |
-            rm VSCodeSetup.exe
+            rm VScodeSetup.exe
