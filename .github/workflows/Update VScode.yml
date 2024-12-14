@@ -1,13 +1,13 @@
 permissions:
   contents: write
- 
-name: Update VScode
- 
+
+name: Update VScode with LFS
+
 on:
   schedule:
     - cron: '0 0 * * *'
   workflow_dispatch:
- 
+
 jobs:
   Update_VScode:
     env:
@@ -16,7 +16,14 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
- 
+      
+    - name: Install Git LFS
+      run: |
+        # Install Git LFS if not already installed
+        choco install git-lfs -y
+        # Initialize Git LFS in the repository
+        git lfs install
+
     - name: Download VScode
       shell: pwsh
       run: |
@@ -27,22 +34,27 @@ jobs:
         $locationHeader = $response.Headers["Location"]
         $response.Close()
         Invoke-WebRequest -Uri $locationHeader -OutFile "VScodeSetup.exe"
- 
-    - name: Compress VScodeSetup.exe
-      shell: pwsh
+
+    - name: Track VScodeSetup.exe with Git LFS
       run: |
-        # Create a ZIP file containing VScodeSetup.exe
-        Compress-Archive -Path "VScodeSetup.exe" -DestinationPath "VScodeSetup.zip"
- 
-    - name: Commit and Push ZIP file
+        # Track the file with Git LFS
+        git lfs track "VScodeSetup.exe"
+
+    - name: Add and Commit with LFS
       run: |
         git config --local user.email "tb1145@outlook.com"
         git config --local user.name "Tb114"
-        git add VScodeSetup.zip
-        git commit -m "Automatically updated VScodeSetup.zip by GitHub Action"
+        # Add the tracked file to the staging area
+        git add VScodeSetup.exe
+        # Commit the changes
+        git commit -m "Automatically updated VScodeSetup.exe using Git LFS"
+
+    - name: Push changes to GitHub
+      run: |
+        # Push the changes including the LFS objects
         git push origin main
- 
+
     - name: Clean up
       run: |
+        # Optionally, remove the file after pushing
         rm VScodeSetup.exe
-        rm VScodeSetup.zip
