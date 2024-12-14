@@ -1,37 +1,48 @@
 permissions:
   contents: write
+ 
 name: Update VScode
+ 
 on:
-    schedule:
-      - cron: '0 0 * * *'
-    workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+ 
 jobs:
-    Update_VScode:
-        env :
-          PAT:  ${{ secrets.GITHUB_TOKEN }}
-        runs-on: windows-latest
-        steps:
-        - name: Check
-          uses: actions/checkout@v3
-        - name: Download
-          shell: pwsh
-          run: |
-
-            $webRequest = [System.Net.WebRequest]::Create("https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user")
-            $webRequest.Method = 'HEAD'
-            $webRequest.AllowAutoRedirect = $false
-            $response = $webRequest.GetResponse()
-            $headersJson = $response.Headers | ConvertTo-Json
-            $locationHeader = $response.Headers["Location"]
-            $response.Close()
-            Invoke-WebRequest -Uri $locationHeader -OutFile "VScodeSetup.exe"
-        - name: Push
-          run: |
-            &git config --local user.email "tb1145@outlook.com"
-            &git config --local user.name "Tb114"
-            &git add .
-            &git commit -m "Automatically updated by GitHub Action"
-            &git push origin main
-        - name: Clear
-          run: |
-            rm VScodeSetup.exe
+  Update_VScode:
+    env:
+      PAT: ${{ secrets.GITHUB_TOKEN }}
+    runs-on: windows-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+ 
+    - name: Download VScode
+      shell: pwsh
+      run: |
+        $webRequest = [System.Net.WebRequest]::Create("https://code.visualstudio.com/sha/download?build=stable&os=win32-x64-user")
+        $webRequest.Method = 'HEAD'
+        $webRequest.AllowAutoRedirect = $false
+        $response = $webRequest.GetResponse()
+        $locationHeader = $response.Headers["Location"]
+        $response.Close()
+        Invoke-WebRequest -Uri $locationHeader -OutFile "VScodeSetup.exe"
+ 
+    - name: Compress VScodeSetup.exe
+      shell: pwsh
+      run: |
+        # Create a ZIP file containing VScodeSetup.exe
+        Compress-Archive -Path "VScodeSetup.exe" -DestinationPath "VScodeSetup.zip"
+ 
+    - name: Commit and Push ZIP file
+      run: |
+        git config --local user.email "tb1145@outlook.com"
+        git config --local user.name "Tb114"
+        git add VScodeSetup.zip
+        git commit -m "Automatically updated VScodeSetup.zip by GitHub Action"
+        git push origin main
+ 
+    - name: Clean up
+      run: |
+        rm VScodeSetup.exe
+        rm VScodeSetup.zip
